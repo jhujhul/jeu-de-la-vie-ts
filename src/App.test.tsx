@@ -3,7 +3,7 @@ import ReactDOM from "react-dom";
 import App, {
   reducer,
   getNumberOfLivingAdjacentCell,
-  isCellAliveNextTurn
+  isCellAliveNextTurn,
 } from "./App";
 
 it("renders without crashing", () => {
@@ -13,14 +13,14 @@ it("renders without crashing", () => {
 });
 
 describe("reducer", () => {
-  it("should ", () => {
+  it("should return the correct state (simple case)", () => {
     // prettier-ignore
     const state = [
       [1, 0],
       [1, 1]
     ];
     const action = {
-      type: "update"
+      type: "update",
     };
 
     const newState = reducer(state, action);
@@ -31,6 +31,62 @@ describe("reducer", () => {
       [1, 1]
     ];
     expect(newState).toEqual(expectedState);
+  });
+
+  it("should return the correct state (Block case)", () => {
+    // prettier-ignore
+    const state = [
+      [0, 0, 0, 0],
+      [0, 1, 1, 0],
+      [0, 1, 1, 0],
+      [0, 0, 0, 0],
+    ];
+    const action = {
+      type: "update",
+    };
+
+    const newState = reducer(state, action);
+
+    // prettier-ignore
+    const expectedState = [
+      [0, 0, 0, 0],
+      [0, 1, 1, 0],
+      [0, 1, 1, 0],
+      [0, 0, 0, 0],
+    ];
+    expect(newState).toEqual(expectedState);
+  });
+
+  it("should return the correct state (Toad case)", () => {
+    // prettier-ignore
+    const state = [
+      [0, 0, 0, 0, 0, 0],
+      [0, 0, 0, 0, 0, 0],
+      [0, 0, 1, 1, 1, 0],
+      [0, 1, 1, 1, 0, 0],
+      [0, 0, 0, 0, 0, 0],
+      [0, 0, 0, 0, 0, 0],
+    ];
+    const action = {
+      type: "update",
+    };
+
+    const newState1 = reducer(state, action);
+
+    // prettier-ignore
+    const expectedState1 = [
+      [0, 0, 0, 0, 0, 0],
+      [0, 0, 0, 1, 0, 0],
+      [0, 1, 0, 0, 1, 0],
+      [0, 1, 0, 0, 1, 0],
+      [0, 0, 1, 0, 0, 0],
+      [0, 0, 0, 0, 0, 0],
+    ];
+    expect(newState1).toEqual(expectedState1);
+
+    const newState2 = reducer(newState1, action);
+
+    expect(newState2).toEqual(state);
   });
 });
 

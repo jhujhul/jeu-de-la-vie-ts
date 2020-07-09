@@ -1,16 +1,73 @@
-import React, { useState, useReducer } from "react";
+import React, { useState, useReducer, Reducer } from "react";
 import "./App.css";
 import { useInterval } from "./hooks";
-import { cloneDeep } from "lodash";
 
+type Matrix = number[][];
+
+const App: React.FC = () => {
+  // prettier-ignore
+  const initialState: Matrix = [
+    [0, 0, 0, 1, 0, 0, 0, 0, 0],
+    [0, 0, 0, 1, 0, 0, 0, 0, 0],
+    [1, 0, 1, 1, 0, 1, 1, 0, 1],
+    [1, 0, 1, 1, 0, 1, 1, 0, 1],
+    [0, 0, 0, 1, 0, 0, 0, 0, 0],
+    [0, 0, 0, 1, 0, 0, 0, 0, 0],
+    [0, 0, 0, 1, 0, 0, 0, 0, 0],
+    [0, 0, 0, 1, 0, 0, 0, 0, 0],
+    [0, 0, 0, 1, 0, 0, 0, 0, 0],
+  ];
+  const { state, updateGame } = useGameOfLife(initialState);
+  const [counter, setCounter] = useState(0);
+
+  useInterval(() => {
+    updateGame();
+    setCounter(counter + 1);
+  }, 1000);
+
+  return (
+    <div className="App">
+      <div className="container">
+        Nombre de tour: {counter}
+        <div className="grid">
+          {state.map((line, indexLine) => (
+            <div className="line" key={indexLine}>
+              {line.map((cell, indexCell) => (
+                <div
+                  className={cell === 1 ? "cell life" : "cell"}
+                  key={indexCell}
+                ></div>
+              ))}
+            </div>
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+};
+
+export default App;
+
+export const useGameOfLife = (initialState: Matrix) => {
+  const [state, dispatch] = useReducer(reducer, initialState);
+
+  const updateGame = () => {
+    dispatch({
+      type: UPDATE_TYPE,
+    });
+  };
+
+  return { state, updateGame };
+};
+
+const UPDATE_TYPE = "update";
 interface Action {
-  type: string;
+  type: typeof UPDATE_TYPE;
 }
-
-export function reducer(state: number[][], action: Action): number[][] {
+export const reducer: Reducer<Matrix, Action> = (state, action) => {
   switch (action.type) {
-    case "update":
-      const newState = cloneDeep(state);
+    case UPDATE_TYPE:
+      const newState = getEmptyMatrix(state.length);
 
       state.forEach((line, y) => {
         line.forEach((cell, x) => {
@@ -19,13 +76,11 @@ export function reducer(state: number[][], action: Action): number[][] {
       });
 
       return newState;
-    default:
-      throw new Error();
   }
-}
+};
 
 export function isCellAliveNextTurn(
-  state: number[][],
+  state: Matrix,
   x: number,
   y: number
 ): boolean {
@@ -40,7 +95,7 @@ export function isCellAliveNextTurn(
 }
 
 export function getNumberOfLivingAdjacentCell(
-  state: number[][],
+  state: Matrix,
   x: number,
   y: number
 ): number {
@@ -61,46 +116,12 @@ export function getNumberOfLivingAdjacentCell(
   return aliveCellsCounter;
 }
 
-const App: React.FC = () => {
-  // prettier-ignore
-  const initialState: number[][] = [
-    [0, 0, 0, 1, 0, 0, 0, 0, 0],
-    [0, 0, 0, 1, 0, 0, 0, 0, 0],
-    [1, 0, 1, 1, 0, 1, 1, 0, 1],
-    [1, 0, 1, 1, 0, 1, 1, 0, 1],
-    [0, 0, 0, 1, 0, 0, 0, 0, 0],
-    [0, 0, 0, 1, 0, 0, 0, 0, 0],
-    [0, 0, 0, 1, 0, 0, 0, 0, 0],
-    [0, 0, 0, 1, 0, 0, 0, 0, 0],
-    [0, 0, 0, 1, 0, 0, 0, 0, 0],
-  ];
-  const [state, dispatch] = useReducer(reducer, initialState);
-  const [counter, setCounter] = useState(0);
+function getEmptyMatrix(length: number): Matrix {
+  const matrix = [];
 
-  useInterval(() => {
-    dispatch({
-      type: "update"
-    });
-    setCounter(counter + 1);
-  }, 1000);
+  for (let i = 0; i < length; i++) {
+    matrix.push([]);
+  }
 
-  return (
-    <div className="App">
-      Nombre de tour: {counter}
-      <div className="grid">
-        {state.map((line, indexLine) => (
-          <div className="line" key={indexLine}>
-            {line.map((cell, indexCell) => (
-              <div
-                className={cell === 1 ? "cell life" : "cell"}
-                key={indexCell}
-              ></div>
-            ))}
-          </div>
-        ))}
-      </div>
-    </div>
-  );
-};
-
-export default App;
+  return matrix;
+}
