@@ -1,9 +1,10 @@
 import React from "react";
 import ReactDOM from "react-dom";
+import { renderHook, act } from "@testing-library/react-hooks";
 import App, {
-  reducer,
   getNumberOfLivingAdjacentCell,
   isCellAliveNextTurn,
+  useGameOfLife,
 } from "./App";
 
 it("renders without crashing", () => {
@@ -12,25 +13,25 @@ it("renders without crashing", () => {
   ReactDOM.unmountComponentAtNode(div);
 });
 
-describe("reducer", () => {
+describe("useGameOfLife", () => {
   it("should return the correct state (simple case)", () => {
     // prettier-ignore
     const state = [
       [1, 0],
       [1, 1]
     ];
-    const action = {
-      type: "update",
-    };
+    const { result } = renderHook(() => useGameOfLife(state));
 
-    const newState = reducer(state, action);
+    act(() => {
+      result.current.updateGame();
+    });
 
     // prettier-ignore
     const expectedState = [
       [1, 1],
       [1, 1]
     ];
-    expect(newState).toEqual(expectedState);
+    expect(result.current.state).toEqual(expectedState);
   });
 
   it("should return the correct state (Block case)", () => {
@@ -41,11 +42,11 @@ describe("reducer", () => {
       [0, 1, 1, 0],
       [0, 0, 0, 0],
     ];
-    const action = {
-      type: "update",
-    };
+    const { result } = renderHook(() => useGameOfLife(state));
 
-    const newState = reducer(state, action);
+    act(() => {
+      result.current.updateGame();
+    });
 
     // prettier-ignore
     const expectedState = [
@@ -54,12 +55,12 @@ describe("reducer", () => {
       [0, 1, 1, 0],
       [0, 0, 0, 0],
     ];
-    expect(newState).toEqual(expectedState);
+    expect(result.current.state).toEqual(expectedState);
   });
 
   it("should return the correct state (Toad case)", () => {
     // prettier-ignore
-    const state = [
+    const initialState = [
       [0, 0, 0, 0, 0, 0],
       [0, 0, 0, 0, 0, 0],
       [0, 0, 1, 1, 1, 0],
@@ -67,11 +68,11 @@ describe("reducer", () => {
       [0, 0, 0, 0, 0, 0],
       [0, 0, 0, 0, 0, 0],
     ];
-    const action = {
-      type: "update",
-    };
+    const { result } = renderHook(() => useGameOfLife(initialState));
 
-    const newState1 = reducer(state, action);
+    act(() => {
+      result.current.updateGame();
+    });
 
     // prettier-ignore
     const expectedState1 = [
@@ -82,11 +83,13 @@ describe("reducer", () => {
       [0, 0, 1, 0, 0, 0],
       [0, 0, 0, 0, 0, 0],
     ];
-    expect(newState1).toEqual(expectedState1);
+    expect(result.current.state).toEqual(expectedState1);
 
-    const newState2 = reducer(newState1, action);
+    act(() => {
+      result.current.updateGame();
+    });
 
-    expect(newState2).toEqual(state);
+    expect(result.current.state).toEqual(initialState);
   });
 });
 
